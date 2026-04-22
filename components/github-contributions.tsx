@@ -30,6 +30,26 @@ export interface ContributionCellProps {
   contribution: Contribution;
 }
 
+function formatTrackedTime(totalSeconds: number): string {
+  if (totalSeconds <= 0) {
+    return "No activity";
+  }
+
+  const totalMinutes = Math.round(totalSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) {
+    return `${minutes}m tracked`;
+  }
+
+  if (minutes === 0) {
+    return `${hours}h tracked`;
+  }
+
+  return `${hours}h ${minutes}m tracked`;
+}
+
 const ContributionCell = React.memo(function ContributionCell({
   contribution,
 }: ContributionCellProps) {
@@ -38,7 +58,7 @@ const ContributionCell = React.memo(function ContributionCell({
     month: "short",
     day: "numeric",
   });
-  const label = `${contribution.count} contributions on ${formattedDate}`;
+  const label = `${formatTrackedTime(contribution.count)} on ${formattedDate}`;
 
   return (
     <td

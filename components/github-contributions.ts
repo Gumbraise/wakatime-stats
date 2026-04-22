@@ -5,18 +5,20 @@ type Theme = "light" | "dark";
 const THEMES = {
   light: {
     text: "#656d76",
-    contributionColors: ["#9be9a8", "#40c463", "#30a14e", "#216e39"],
   },
   dark: {
     text: "#8b949e",
-    contributionColors: ["#0e4429", "#006d32", "#26a641", "#39d353"],
   },
 } as const;
 
-// Derived from the average delta between GitHub's empty-cell colors and their
-// light/dark backgrounds so a single translucent neutral works on transparent SVGs.
-const EMPTY_CELL_COLOR = "#9e9e9e";
-const EMPTY_CELL_OPACITY = "0.18";
+const CONTRIBUTION_BASE_COLOR = "#2da44e";
+const CONTRIBUTION_OPACITY_BY_LEVEL: Record<ContributionLevel, string> = {
+  0: "0.16",
+  1: "0.32",
+  2: "0.5",
+  3: "0.72",
+  4: "1",
+};
 
 type ContributionLevel = 0 | 1 | 2 | 3 | 4;
 
@@ -91,17 +93,10 @@ function getContributionsByDay(data: Contribution[]) {
   }, {});
 }
 
-function getContributionFill(level: ContributionLevel, theme: Theme) {
-  if (level === 0) {
-    return {
-      color: EMPTY_CELL_COLOR,
-      opacity: EMPTY_CELL_OPACITY,
-    };
-  }
-
+function getContributionFill(level: ContributionLevel) {
   return {
-    color: getPalette(theme).contributionColors[level - 1],
-    opacity: undefined,
+    color: CONTRIBUTION_BASE_COLOR,
+    opacity: CONTRIBUTION_OPACITY_BY_LEVEL[level],
   };
 }
 
@@ -143,7 +138,7 @@ export function renderGitHubContributionsSvg(
       .map((contribution, index) => {
         const x = leftPadding + index * step;
         const y = topPadding + day * step;
-        const fill = getContributionFill(contribution.level, theme);
+        const fill = getContributionFill(contribution.level);
         const label = `${formatTrackedTime(contribution.count)} on ${new Date(
           contribution.date,
         ).toLocaleString("en-US", {

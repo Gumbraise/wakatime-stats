@@ -1,5 +1,11 @@
-import { renderGitHubContributionsSvg } from "@/components/github-contributions";
-import { getWakaTimeContributions } from "@/lib/wakatime";
+import {
+  renderErrorSvg,
+  renderGitHubContributionsSvg,
+} from "@/components/github-contributions";
+import {
+  getWakaTimeContributions,
+  WakaTimeUserNotFoundError,
+} from "@/lib/wakatime";
 
 export const revalidate = 21600;
 
@@ -14,10 +20,27 @@ function getThemeFromSearchParams(searchParams: URLSearchParams): "light" | "dar
   return "light";
 }
 
+function getUsernameFromSearchParams(searchParams: URLSearchParams): string {
+  return searchParams.get("user")?.trim() || "@gumbraise";
+}
+
 export async function GET(request: Request) {
-  const contributions = await getWakaTimeContributions();
-  const theme = getThemeFromSearchParams(new URL(request.url).searchParams);
-  const svg = renderGitHubContributionsSvg(contributions, theme);
+  const searchParams = new URL(request.url).searchParams;
+  const theme = getThemeFromSearchParams(searchParams);
+  const username = getUsernameFromSearchParams(searchParams);
+
+  let svg: string;
+
+  try {
+    const contributions = await getWakaTimeContributions(username);
+    svg = renderGitHubContributionsSvg(contributions, theme);
+  } catch (error) {
+    if (error instanceof WakaTimeUserNotFoundError) {
+      svg = renderErrorSvg(error.message, theme);
+    } else {
+      throw error;
+    }
+  }
 
   return new Response(svg, {
     headers: {

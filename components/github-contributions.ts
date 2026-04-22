@@ -23,6 +23,10 @@ export interface Contribution {
   level: ContributionLevel;
 }
 
+function getPalette(theme: Theme) {
+  return THEMES[theme];
+}
+
 function escapeXml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -101,7 +105,7 @@ export function renderGitHubContributionsSvg(
   const height = topPadding + bottomPadding + rowCount * step;
   const contributionsByDay = getContributionsByDay(data);
   const monthLabels = getMonthLabelColumns(data);
-  const palette = THEMES[theme];
+  const palette = getPalette(theme);
 
   const monthText = monthLabels
     .map(
@@ -144,6 +148,24 @@ export function renderGitHubContributionsSvg(
     monthText,
     weekdayText,
     cells,
+    `</svg>`,
+  ].join("");
+}
+
+export function renderErrorSvg(message: string, theme: Theme = "light"): string {
+  const width = 720;
+  const height = 96;
+  const palette = getPalette(theme);
+
+  return [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">`,
+    `<title id="title">WakaTime heatmap error</title>`,
+    `<desc id="desc">${escapeXml(message)}</desc>`,
+    `<rect width="${width}" height="${height}" rx="10" ry="10" fill="${palette.background}"/>`,
+    `<rect x="16" y="16" width="688" height="64" rx="8" ry="8" fill="${theme === "dark" ? "#161b22" : "#f6f8fa"}"/>`,
+    `<text x="32" y="42" fill="${palette.text}" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">WakaTime heatmap unavailable</text>`,
+    `<text x="32" y="64" fill="${palette.text}" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">${escapeXml(message)}</text>`,
     `</svg>`,
   ].join("");
 }

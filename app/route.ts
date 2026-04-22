@@ -3,9 +3,21 @@ import { getWakaTimeContributions } from "@/lib/wakatime";
 
 export const revalidate = 21600;
 
-export async function GET() {
+function getThemeFromSearchParams(searchParams: URLSearchParams): "light" | "dark" {
+  const theme = searchParams.get("theme")?.toLowerCase();
+  const dark = searchParams.get("dark")?.toLowerCase();
+
+  if (theme === "dark" || dark === "1" || dark === "true") {
+    return "dark";
+  }
+
+  return "light";
+}
+
+export async function GET(request: Request) {
   const contributions = await getWakaTimeContributions();
-  const svg = renderGitHubContributionsSvg(contributions);
+  const theme = getThemeFromSearchParams(new URL(request.url).searchParams);
+  const svg = renderGitHubContributionsSvg(contributions, theme);
 
   return new Response(svg, {
     headers: {

@@ -1,11 +1,19 @@
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
-const CONTRIBUTION_COLORS = [
-  "#ebedf0",
-  "#9be9a8",
-  "#40c463",
-  "#30a14e",
-  "#216e39",
-] as const;
+
+type Theme = "light" | "dark";
+
+const THEMES = {
+  light: {
+    background: "#ffffff",
+    text: "#656d76",
+    contributionColors: ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"],
+  },
+  dark: {
+    background: "#0d1117",
+    text: "#8b949e",
+    contributionColors: ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"],
+  },
+} as const;
 
 type ContributionLevel = 0 | 1 | 2 | 3 | 4;
 
@@ -76,7 +84,10 @@ function getContributionsByDay(data: Contribution[]) {
   }, {});
 }
 
-export function renderGitHubContributionsSvg(data: Contribution[]): string {
+export function renderGitHubContributionsSvg(
+  data: Contribution[],
+  theme: Theme = "light",
+): string {
   const cellSize = 10;
   const cellGap = 3;
   const step = cellSize + cellGap;
@@ -90,18 +101,19 @@ export function renderGitHubContributionsSvg(data: Contribution[]): string {
   const height = topPadding + bottomPadding + rowCount * step;
   const contributionsByDay = getContributionsByDay(data);
   const monthLabels = getMonthLabelColumns(data);
+  const palette = THEMES[theme];
 
   const monthText = monthLabels
     .map(
       ({ label, x }) =>
-        `<text x="${leftPadding + x * step}" y="14" fill="#656d76" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">${escapeXml(label)}</text>`,
+        `<text x="${leftPadding + x * step}" y="14" fill="${palette.text}" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">${escapeXml(label)}</text>`,
     )
     .join("");
 
   const weekdayText = [1, 3, 5]
     .map((day) => {
       const y = topPadding + day * step + 8;
-      return `<text x="0" y="${y}" fill="#656d76" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">${WEEKDAYS[day]}</text>`;
+      return `<text x="0" y="${y}" fill="${palette.text}" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">${WEEKDAYS[day]}</text>`;
     })
     .join("");
 
@@ -118,7 +130,7 @@ export function renderGitHubContributionsSvg(data: Contribution[]): string {
           year: "numeric",
         })}`;
 
-        return `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${CONTRIBUTION_COLORS[contribution.level]}"><title>${escapeXml(label)}</title></rect>`;
+        return `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${palette.contributionColors[contribution.level]}"><title>${escapeXml(label)}</title></rect>`;
       })
       .join(""),
   ).join("");
@@ -128,7 +140,7 @@ export function renderGitHubContributionsSvg(data: Contribution[]): string {
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">`,
     `<title id="title">WakaTime activity heatmap</title>`,
     `<desc id="desc">Daily WakaTime tracked time rendered as a GitHub-style contributions chart.</desc>`,
-    `<rect width="${width}" height="${height}" fill="#ffffff"/>`,
+    `<rect width="${width}" height="${height}" fill="${palette.background}"/>`,
     monthText,
     weekdayText,
     cells,

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "tscbuild": "next build && tsc --project tsconfig.server.json",
+    "tsc": "tsc --project tsconfig.server.json"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

@@ -1,6 +1,4 @@
-import GitHubContributions, {
-  type Contribution,
-} from "@/components/github-contributions";
+import type { Contribution } from "@/components/github-contributions";
 
 type WakaTimeDay = {
   date: string;
@@ -26,11 +24,11 @@ function getContributionLevel(total: number, maxTotal: number): 0 | 1 | 2 | 3 | 
   return 1;
 }
 
-async function getWakaTimeContributions(): Promise<Contribution[]> {
+export async function getWakaTimeContributions(): Promise<Contribution[]> {
   const response = await fetch(
     "https://wakatime.com/api/v1/users/@gumbraise/insights/days",
     {
-      cache: "no-store",
+      next: { revalidate: 21600 },
     },
   );
 
@@ -47,10 +45,4 @@ async function getWakaTimeContributions(): Promise<Contribution[]> {
     count: day.total,
     level: getContributionLevel(day.total, maxTotal),
   }));
-}
-
-export default async function Home() {
-  const contributions = await getWakaTimeContributions();
-
-  return <GitHubContributions data={contributions} />;
 }

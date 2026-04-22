@@ -5,13 +5,18 @@ type Theme = "light" | "dark";
 const THEMES = {
   light: {
     text: "#656d76",
-    contributionColors: ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"],
+    contributionColors: ["#9be9a8", "#40c463", "#30a14e", "#216e39"],
   },
   dark: {
     text: "#8b949e",
-    contributionColors: ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"],
+    contributionColors: ["#0e4429", "#006d32", "#26a641", "#39d353"],
   },
 } as const;
+
+// Derived from the average delta between GitHub's empty-cell colors and their
+// light/dark backgrounds so a single translucent neutral works on transparent SVGs.
+const EMPTY_CELL_COLOR = "#9e9e9e";
+const EMPTY_CELL_OPACITY = "0.18";
 
 type ContributionLevel = 0 | 1 | 2 | 3 | 4;
 
@@ -86,6 +91,20 @@ function getContributionsByDay(data: Contribution[]) {
   }, {});
 }
 
+function getContributionFill(level: ContributionLevel, theme: Theme) {
+  if (level === 0) {
+    return {
+      color: EMPTY_CELL_COLOR,
+      opacity: EMPTY_CELL_OPACITY,
+    };
+  }
+
+  return {
+    color: getPalette(theme).contributionColors[level - 1],
+    opacity: undefined,
+  };
+}
+
 export function renderGitHubContributionsSvg(
   data: Contribution[],
   theme: Theme = "light",
@@ -124,6 +143,7 @@ export function renderGitHubContributionsSvg(
       .map((contribution, index) => {
         const x = leftPadding + index * step;
         const y = topPadding + day * step;
+        const fill = getContributionFill(contribution.level, theme);
         const label = `${formatTrackedTime(contribution.count)} on ${new Date(
           contribution.date,
         ).toLocaleString("en-US", {
@@ -132,7 +152,7 @@ export function renderGitHubContributionsSvg(
           year: "numeric",
         })}`;
 
-        return `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${palette.contributionColors[contribution.level]}"><title>${escapeXml(label)}</title></rect>`;
+        return `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${fill.color}"${fill.opacity ? ` fill-opacity="${fill.opacity}"` : ""}><title>${escapeXml(label)}</title></rect>`;
       })
       .join(""),
   ).join("");

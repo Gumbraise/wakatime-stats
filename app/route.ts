@@ -4,6 +4,7 @@ import {
 } from "@/components/github-contributions";
 import {
   getWakaTimeContributions,
+  WakaTimeUserForbiddenError,
   WakaTimeUserNotFoundError,
 } from "@/lib/wakatime";
 
@@ -21,7 +22,7 @@ function getThemeFromSearchParams(searchParams: URLSearchParams): "light" | "dar
 }
 
 function getUsernameFromSearchParams(searchParams: URLSearchParams): string {
-  return searchParams.get("user")?.trim() || "@gumbraise";
+  return searchParams.get("user")?.trim();
 }
 
 export async function GET(request: Request) {
@@ -35,7 +36,10 @@ export async function GET(request: Request) {
     const contributions = await getWakaTimeContributions(username);
     svg = renderGitHubContributionsSvg(contributions, theme);
   } catch (error) {
-    if (error instanceof WakaTimeUserNotFoundError) {
+    if (
+      error instanceof WakaTimeUserNotFoundError ||
+      error instanceof WakaTimeUserForbiddenError
+    ) {
       svg = renderErrorSvg(error.message, theme);
     } else {
       throw error;

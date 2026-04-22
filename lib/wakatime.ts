@@ -1,7 +1,5 @@
 import type { Contribution } from "@/components/github-contributions";
 
-const DEFAULT_WAKATIME_USER = "@gumbraise";
-
 type WakaTimeDay = {
   date: string;
   total: number;
@@ -21,6 +19,13 @@ export class WakaTimeUserNotFoundError extends Error {
   }
 }
 
+export class WakaTimeUserForbiddenError extends Error {
+  constructor(username: string) {
+    super(`User "${username}" has a private WakaTime profile.`);
+    this.name = "WakaTimeUserForbiddenError";
+  }
+}
+
 function getContributionLevel(total: number, maxTotal: number): 0 | 1 | 2 | 3 | 4 {
   if (total <= 0 || maxTotal <= 0) {
     return 0;
@@ -35,7 +40,7 @@ function getContributionLevel(total: number, maxTotal: number): 0 | 1 | 2 | 3 | 
 }
 
 export async function getWakaTimeContributions(
-  username: string = DEFAULT_WAKATIME_USER,
+  username: string,
 ): Promise<Contribution[]> {
   const response = await fetch(
     `https://wakatime.com/api/v1/users/${encodeURIComponent(username)}/insights/days`,
@@ -48,6 +53,10 @@ export async function getWakaTimeContributions(
 
   if (payload.error === "Not found.") {
     throw new WakaTimeUserNotFoundError(username);
+  }
+
+  if (payload.error === "Forbidden") {
+    throw new WakaTimeUserForbiddenError(username);
   }
 
   if (!response.ok) {

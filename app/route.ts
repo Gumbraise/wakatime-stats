@@ -21,7 +21,7 @@ function getThemeFromSearchParams(searchParams: URLSearchParams): "light" | "dar
   return "light";
 }
 
-function getUsernameFromSearchParams(searchParams: URLSearchParams): string {
+function getUsernameFromSearchParams(searchParams: URLSearchParams): string | undefined {
   return searchParams.get("user")?.trim();
 }
 
@@ -32,6 +32,9 @@ export async function GET(request: Request) {
 
   let svg: string;
 
+  if (!username) {
+    svg = renderErrorSvg('Missing required query parameter: "user".', theme);
+  } else {
   try {
     const contributions = await getWakaTimeContributions(username);
     svg = renderGitHubContributionsSvg(contributions, theme);
@@ -44,6 +47,7 @@ export async function GET(request: Request) {
     } else {
       throw error;
     }
+  }
   }
 
   return new Response(svg, {

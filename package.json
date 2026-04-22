@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "tscbuild": "next build && tsc --project tsconfig.server.json",
+    "tscbuild": "next build --webpack && tsc --project tsconfig.server.json",
     "tsc": "tsc --project tsconfig.server.json"
   },
   "dependencies": {

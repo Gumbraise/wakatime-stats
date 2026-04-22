@@ -4,12 +4,10 @@ type Theme = "light" | "dark";
 
 const THEMES = {
   light: {
-    background: "#ffffff",
     text: "#656d76",
     contributionColors: ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"],
   },
   dark: {
-    background: "#0d1117",
     text: "#8b949e",
     contributionColors: ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"],
   },
@@ -144,7 +142,6 @@ export function renderGitHubContributionsSvg(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">`,
     `<title id="title">WakaTime activity heatmap</title>`,
     `<desc id="desc">Daily WakaTime tracked time rendered as a GitHub-style contributions chart.</desc>`,
-    `<rect width="${width}" height="${height}" fill="${palette.background}"/>`,
     monthText,
     weekdayText,
     cells,
@@ -162,7 +159,6 @@ export function renderErrorSvg(message: string, theme: Theme = "light"): string 
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">`,
     `<title id="title">WakaTime heatmap error</title>`,
     `<desc id="desc">${escapeXml(message)}</desc>`,
-    `<rect width="${width}" height="${height}" rx="10" ry="10" fill="${palette.background}"/>`,
     `<rect x="16" y="16" width="688" height="64" rx="8" ry="8" fill="${theme === "dark" ? "#161b22" : "#f6f8fa"}"/>`,
     `<text x="32" y="42" fill="${palette.text}" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">WakaTime heatmap unavailable</text>`,
     `<text x="32" y="64" fill="${palette.text}" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">${escapeXml(message)}</text>`,

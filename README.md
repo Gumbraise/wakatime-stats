@@ -59,9 +59,9 @@ Key features:
 
 ## Demo
 
-[![Gumbraise's WakaTime stats](https://wakatime-stats.sc1utou1720.universe.wf/?user=Gumbraise)](https://wakatime.com/@Gumbraise)
+[![Gumbraise's WakaTime stats](https://wakatime-stats.gumbraise.com/?user=Gumbraise)](https://wakatime.com/@Gumbraise)
 
-> The heatmap above is generated live from [wakatime-stats.sc1utou1720.universe.wf](https://wakatime-stats.sc1utou1720.universe.wf).
+> The heatmap above is generated live from [wakatime-stats.gumbraise.com](https://wakatime-stats.gumbraise.com).
 
 ## Usage
 
@@ -70,13 +70,13 @@ Key features:
 Paste this into any Markdown file and replace `YOUR_USERNAME` with your WakaTime username:
 
 ```md
-![WakaTime stats](https://wakatime-stats.sc1utou1720.universe.wf/?user=YOUR_USERNAME)
+![WakaTime stats](https://wakatime-stats.gumbraise.com/?user=YOUR_USERNAME)
 ```
 
 To make the image a clickable link to your WakaTime profile:
 
 ```md
-[![WakaTime stats](https://wakatime-stats.sc1utou1720.universe.wf/?user=YOUR_USERNAME)](https://wakatime.com/@YOUR_USERNAME)
+[![WakaTime stats](https://wakatime-stats.gumbraise.com/?user=YOUR_USERNAME)](https://wakatime.com/@YOUR_USERNAME)
 ```
 
 > [!NOTE]
@@ -95,18 +95,18 @@ To make the image a clickable link to your WakaTime profile:
 **Light theme** (default):
 
 ```md
-![WakaTime stats](https://wakatime-stats.sc1utou1720.universe.wf/?user=Gumbraise)
+![WakaTime stats](https://wakatime-stats.gumbraise.com/?user=Gumbraise)
 ```
 
-[![Light theme demo](https://wakatime-stats.sc1utou1720.universe.wf/?user=Gumbraise&theme=light)](https://wakatime.com/@Gumbraise)
+[![Light theme demo](https://wakatime-stats.gumbraise.com/?user=Gumbraise&theme=light)](https://wakatime.com/@Gumbraise)
 
 **Dark theme:**
 
 ```md
-![WakaTime stats](https://wakatime-stats.sc1utou1720.universe.wf/?user=Gumbraise&theme=dark)
+![WakaTime stats](https://wakatime-stats.gumbraise.com/?user=Gumbraise&theme=dark)
 ```
 
-[![Dark theme demo](https://wakatime-stats.sc1utou1720.universe.wf/?user=Gumbraise&theme=dark)](https://wakatime.com/@Gumbraise)
+[![Dark theme demo](https://wakatime-stats.gumbraise.com/?user=Gumbraise&theme=dark)](https://wakatime.com/@Gumbraise)
 
 ## Error handling
 

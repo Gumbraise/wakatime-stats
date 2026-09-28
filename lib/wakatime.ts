@@ -43,7 +43,7 @@ export async function getWakaTimeContributions(
   username: string,
 ): Promise<Contribution[]> {
   const response = await fetch(
-    `https://wakatime.com/api/v1/users/${encodeURIComponent(username)}/insights/days`,
+    `https://wakatime.com/api/v1/users/${encodeURIComponent(username)}/insights/days/public`,
     {
       next: { revalidate: 21600 },
     },

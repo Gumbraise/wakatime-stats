@@ -61,36 +61,62 @@ function formatTrackedTime(totalSeconds: number): string {
     return `${hours}h ${minutes}m tracked`;
 }
 
-function getMonthLabelColumns(data: Contribution[]) {
-    const lastWeekCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_MONTH_LABEL_GAP = 3;
 
-    return data.reduce<Array<{ label: string; x: number }>>((acc, contribution, i) => {
+type PositionedContribution = Contribution & {
+    parsedDate: Date;
+    column: number;
+    row: number;
+};
+
+// Dates are "YYYY-MM-DD" strings, parsed as UTC midnight; all date math stays in UTC.
+function positionContributions(data: Contribution[]): PositionedContribution[] {
+    if (data.length === 0) {
+        return [];
+    }
+
+    const firstDate = new Date(data[0].date);
+    const gridStart = firstDate.getTime() - firstDate.getUTCDay() * DAY_MS;
+
+    return data.map((contribution) => {
         const date = new Date(contribution.date);
-        const isStartOfWeek = i % 7 === 0;
-        const isWithinFirstWeekOfMonth = date.getDate() >= 1 && date.getDate() <= 7;
-        const isBeforeLastWeek = date < lastWeekCutoff;
+        const dayIndex = Math.round((date.getTime() - gridStart) / DAY_MS);
 
-        if (
-            i === 0 ||
-            (isStartOfWeek && isWithinFirstWeekOfMonth && isBeforeLastWeek)
-        ) {
-            acc.push({
-                label: date.toLocaleString("en-US", {month: "short"}),
-                x: Math.floor(i / 7),
-            });
-        }
-
-        return acc;
-    }, []);
+        return {
+            ...contribution,
+            parsedDate: date,
+            column: Math.floor(dayIndex / 7),
+            row: date.getUTCDay(),
+        };
+    });
 }
 
-function getContributionsByDay(data: Contribution[]) {
-    return data.reduce<Record<number, Contribution[]>>((acc, contribution) => {
-        const day = new Date(contribution.date).getDay();
-        acc[day] ??= [];
-        acc[day].push(contribution);
-        return acc;
-    }, {});
+function getMonthLabelColumns(cells: PositionedContribution[]) {
+    const labels: Array<{ label: string; x: number }> = [];
+    let previousMonth: number | undefined;
+
+    for (const cell of cells) {
+        const month = cell.parsedDate.getUTCMonth();
+
+        if (month === previousMonth) {
+            continue;
+        }
+
+        previousMonth = month;
+        // A month starting mid-week gets its label on the following column, like GitHub.
+        const x = cell.row === 0 || labels.length === 0 ? cell.column : cell.column + 1;
+        const label = cell.parsedDate.toLocaleString("en-US", {month: "short", timeZone: "UTC"});
+
+        const last = labels.at(-1);
+        if (last && x - last.x < MIN_MONTH_LABEL_GAP) {
+            labels.pop();
+        }
+
+        labels.push({label, x});
+    }
+
+    return labels;
 }
 
 function getContributionFill(level: ContributionLevel) {
@@ -112,11 +138,11 @@ export function renderGitHubContributionsSvg(
     const rightPadding = 16;
     const bottomPadding = 18;
     const rowCount = 7;
-    const columnCount = Math.max(Math.ceil(data.length / 7), 1);
+    const positioned = positionContributions(data);
+    const columnCount = Math.max((positioned.at(-1)?.column ?? 0) + 1, 1);
     const width = leftPadding + rightPadding + columnCount * step;
     const height = topPadding + bottomPadding + rowCount * step;
-    const contributionsByDay = getContributionsByDay(data);
-    const monthLabels = getMonthLabelColumns(data);
+    const monthLabels = getMonthLabelColumns(positioned);
     const palette = getPalette(theme);
 
     const monthText = monthLabels
@@ -133,24 +159,21 @@ export function renderGitHubContributionsSvg(
         })
         .join("");
 
-    const cells = Array.from({length: rowCount}, (_, day) =>
-        (contributionsByDay[day] ?? [])
-            .map((contribution, index) => {
-                const x = leftPadding + index * step;
-                const y = topPadding + day * step;
-                const fill = getContributionFill(contribution.level);
-                const label = `${formatTrackedTime(contribution.count)} on ${new Date(
-                    contribution.date,
-                ).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                })}`;
+    const cells = positioned
+        .map((contribution) => {
+            const x = leftPadding + contribution.column * step;
+            const y = topPadding + contribution.row * step;
+            const fill = getContributionFill(contribution.level);
+            const label = `${formatTrackedTime(contribution.count)} on ${contribution.parsedDate.toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                timeZone: "UTC",
+            })}`;
 
-                return `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${fill.color}"${fill.opacity ? ` fill-opacity="${fill.opacity}"` : ""}><title>${escapeXml(label)}</title></rect>`;
-            })
-            .join(""),
-    ).join("");
+            return `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${fill.color}"${fill.opacity ? ` fill-opacity="${fill.opacity}"` : ""}><title>${escapeXml(label)}</title></rect>`;
+        })
+        .join("");
 
     return [
         `<?xml version="1.0" encoding="UTF-8"?>`,
